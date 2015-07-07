@@ -2,7 +2,6 @@
 var irc = require("irc");
 var express = require("express");
 var log4js = require("log4js");
-var io = require("socket.io");
 var body_parser = require("body-parser");
 var util = require("util");
 var isgd = require('isgd');
@@ -422,26 +421,5 @@ app.post("/git.json", jp, function (req, res) {
     res.end();
 })
 
-var nserver = require("http").createServer(app), io = io.listen(nserver, { log: false });
-
-io.sockets.on("connection", function(socket)
-{
-
-    var conn = new ClientConnection(server.instance);
-
-    conn.on("message", function(cn, message)
-    {
-        server.instance.handleMessage(cn, message);
-    });
-
-    conn.on("closed", function()
-    {
-        server.deleteConnection(conn);
-    });
-
-    conn.bindToWeb(socket);
-
-});
-
-nserver.listen(config.port);
+app.listen(config.port);
 logger.info("listening on port " + config.port);
