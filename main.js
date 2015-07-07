@@ -16,7 +16,7 @@ var config = {
     channels: ["#6c37"],
     server: "irc.freenode.net",
     bot_name: "nyawu",
-    bot_pass: "",
+    bot_pass: null,
     bot_user: "nyan",
     bot_real: "Avail's Gitlab hook bot",
 
@@ -37,6 +37,7 @@ bot.addListener("error", function(message) {
 var authed = false;
 bot.addListener("notice", function (from, message) {
 
+    // FIXME: improve auth
     if (from == "NickServ" && authed == false) {
         bot.say("nickserv", "identify " + config.bot_pass);
         logger.info("We auth");
@@ -187,25 +188,23 @@ app.post("/git.json", jp, function (req, res) {
         //                 COMMENT HOOK                   \\
         //                                                \\
         // ---------------------------------------------- \\
-        // TODO: Implement Github for comments, there's a lot of stuff to be modified here
         } else if (req.headers["x-gitlab-event"] == "Note Hook") {
 
-            var type = "";
             switch(req.body["object_attributes"]["noteable_type"].toLowerCase()) {
                 case "commit":
-                type = "commit \x02\x0303" + req.body["commit"]["message"] + "\x03\x02";
+                var type = "commit \x02\x0303" + req.body["commit"]["message"] + "\x03\x02";
                 break;
 
                 case "mergerequest":
-                type = "merge request \x02\x0303" + req.body["merge_request"]["title"] + "\x03\x02";
+                var type = "merge request \x02\x0303" + req.body["merge_request"]["title"] + "\x03\x02";
                 break;
 
                 case "issue":
-                type = "issue \x02\x0303" + req.body["issue"]["title"] + "\x03\x02";
+                var type = "issue \x02\x0303" + req.body["issue"]["title"] + "\x03\x02";
                 break;
 
                 case "snippet":
-                type = "snippet \x02\x0303" + req.body["snippet"]["title"] + "\x03\x02";
+                var type = "snippet \x02\x0303" + req.body["snippet"]["title"] + "\x03\x02";
                 break;
 
             }
@@ -219,7 +218,50 @@ app.post("/git.json", jp, function (req, res) {
                 }
             });
 
-            logger.info("Comment");
+            logger.info("Gitlab: " + type + " comment");
+
+        } else if (req.headers["x-github-event"] == "commit_comment") {
+
+            isgd.shorten(req.body["comment"]["html_url"], function(resp) {
+                for (var channel of config.channels) {
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on a commit - %s",
+                        req.body["comment"]["user"]["login"],
+                        resp));
+                }
+            });
+
+            logger.info("Github: commit comment");
+
+        } else if (req.headers["x-github-event"] == "issue_comment") {
+
+            var split_url = req.body["issue"]["html_url"].split('/');
+            if (split_url[split_url.length - 2] == "issues") { // if it's an issue
+
+                isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+                    for (var channel of config.channels) {
+                        bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
+                            req.body["issue"]["user"]["login"],
+                            "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                            resp));
+                    }
+                });
+
+                logger.info("Github: issue comment");
+
+            } else { // otherwise it's a pull request
+
+                isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+                    for (var channel of config.channels) {
+                        bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on pull request \"%s\" - %s",
+                            req.body["issue"]["user"]["login"],
+                            "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                            resp));
+                    }
+                });
+
+                logger.info("Github: pull request comment");
+
+            }
 
         // ---------------------------------------------- \\
         //                                                \\
