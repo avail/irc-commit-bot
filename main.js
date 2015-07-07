@@ -15,9 +15,9 @@ var config = {
     // irc
     channels: ["#availtesting"],
     server: "irc.rizon.net",
-    bot_name: "avail",
-    bot_pass: "omfgwtf1235",
-    bot_registered: true, // is the bot registered? (true or false)
+    bot_name: "nyanners",
+    bot_pass: "",
+    bot_registered: false, // is the bot registered? (true or false)
     bot_vhost: false, // does the bot have a VHost assigned?
     bot_user: "nyan",
     bot_real: "Avail's Gitlab hook bot",
