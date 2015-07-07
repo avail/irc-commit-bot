@@ -66,12 +66,30 @@ app.post("/git.json", jp, function (req, res) {
 
         if (req.headers["x-gitlab-event"] == "Push Hook" || req.headers["x-github-event"] == "push") {
 
+            if (req.headers["x-gitlab-event"] != null) {
+
+                var repository_url = req.body["repository"]["homepage"];
+                var repository_name = req.body["repository"]["name"];
+                var user_name = req.body["user_name"];
+                var commits_count = req.body["total_commits_count"];
+                var branch = req.body["ref"].split("/")[2];
+
+            } else if (req.headers["x-github-event"]) {
+
+                var repository_url = req.body["repository"]["html_url"];
+                var repository_name = req.body["repository"]["name"];
+                var user_name = req.body["pusher"]["name"];
+                var commits_count = req.body["commits"].length;
+                var branch = req.body["ref"].split("/")[2];
+
+            }
+
             var reply = util.format("\x02\x0306Commit\x03\x02: \x02\x0303%s\x03\x02 - %s pushed %d new commit%s to branch \x02%s\x02:",
-                req.body["repository"]["name"],
-                req.body["user_name"],
-                req.body["total_commits_count"],
-                req.body["total_commits_count"] == 1 ? "" : "s",
-                req.body["ref"].split("/")[2]);
+                repository_name,
+                user_name,
+                commits_count,
+                commits_count == 1 ? "" : "s",
+                branch);
 
             for (var channel of config.channels) {
                 bot.say(channel, reply);
@@ -89,7 +107,7 @@ app.post("/git.json", jp, function (req, res) {
             }
 
             for (var channel of config.channels) {
-                bot.say(channel, "View more at " + req.body["repository"]["homepage"]);
+                bot.say(channel, "View more at " + repository_url);
             }
 
             logger.info("Push Hook");
