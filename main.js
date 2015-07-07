@@ -40,8 +40,8 @@ bot.addListener("notice", function (from, message) {
     if (from == "NickServ" && authed == false) {
         bot.say("nickserv", "identify " + config.bot_pass);
         logger.info("We auth");
-        bot.say("hostserv", "on");
-        logger.info("We vhost");
+        //bot.say("hostserv", "on");
+        //logger.info("We vhost");
         authed = true;
 
         for (channel of config.channels) {
@@ -114,32 +114,60 @@ app.post("/git.json", jp, function (req, res) {
 
         } else if (req.headers["x-gitlab-event"] == "Issue Hook" || req.headers["x-github-event"] == "issues") {
 
-            var type = "";
-            switch(req.body["object_attributes"]["action"].toLowerCase()) {
-                case "open":
-                type = "Issue opened by ";
-                break;
+            if (req.headers["x-gitlab-event"] != null) {
 
-                case "close":
-                type = "Issue closed by ";
-                break;
+                if(req.body["object_attributes"]["action"] == "update") return res.sendStatus(400);
 
-                case "reopen":
-                type = "Issue reopened by ";
-                break;
-            }
+                switch(req.body["object_attributes"]["action"].toLowerCase()) {
+                    case "open":
+                    var type = "Issue opened by ";
+                    break;
 
-            if (req.body["object_attributes"]["action"] != "update") {
+                    case "close":
+                    var type = "Issue closed by ";
+                    break;
 
-                for (var channel of config.channels) {
-                    bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
-                        req.body["object_attributes"]["iid"],
-                        req.body["object_attributes"]["title"],
-                        type,
-                        req.body["user"]["name"],
-                        req.body["object_attributes"]["url"]));
+                    case "reopen":
+                    var type = "Issue reopened by ";
+                    break;
                 }
 
+                var issue_id = req.body["object_attributes"]["iid"];
+                var issue_title = req.body["object_attributes"]["title"];
+                var issue_user = req.body["user"]["name"];
+                var issue_url = req.body["object_attributes"]["url"];
+
+
+            } else if (req.headers["x-github-event"]) {
+
+                switch(req.body["action"].toLowerCase()) {
+                    case "opened":
+                    var type = "Issue opened by ";
+                    break;
+
+                    case "closed":
+                    var type = "Issue closed by ";
+                    break;
+
+                    case "reopened":
+                    var type = "Issue reopened by ";
+                    break;
+                }
+
+                var issue_id = req.body["issue"]["number"];
+                var issue_title = req.body["issue"]["title"];
+                var issue_user = req.body["issue"]["user"]["login"];
+                var issue_url = req.body["issue"]["html_url"];
+
+            }
+
+            for (var channel of config.channels) {
+                bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
+                    issue_id,
+                    issue_title,
+                    type,
+                    issue_user,
+                    issue_url));
             }
 
             logger.info("Issue Hook");
