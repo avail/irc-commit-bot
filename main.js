@@ -8,15 +8,17 @@ var util = require("util");
 var isgd = require('isgd');
 
 var logger = log4js.getLogger();
-logger.info("ciSV starting...");
+logger.info("bot starting...");
 
 // configuration
 var config = {
     // irc
-    channels: ["#6c37"],
-    server: "irc.freenode.net",
-    bot_name: "nyawu",
-    bot_pass: null,
+    channels: ["#availtesting"],
+    server: "irc.rizon.net",
+    bot_name: "avail",
+    bot_pass: "omfgwtf1235",
+    bot_registered: true, // is the bot registered? (true or false)
+    bot_vhost: true, // does the bot have a VHost assigned?
     bot_user: "nyan",
     bot_real: "Avail's Gitlab hook bot",
 
@@ -34,24 +36,75 @@ bot.addListener("error", function(message) {
     logger.info("irc died: ", message);
 });
 
-var authed = false;
-bot.addListener("notice", function (from, message) {
+if (config.bot_registered == true) {
 
-    // FIXME: improve auth
-    if (from == "NickServ" && authed == false) {
-        bot.say("nickserv", "identify " + config.bot_pass);
-        logger.info("We auth");
-        //bot.say("hostserv", "on");
-        //logger.info("We vhost");
-        authed = true;
+    var authed = false;
 
-        for (channel of config.channels) {
-            bot.join(channel);
+    bot.addListener('raw', function(message) {
+
+        raw = message;
+        if (raw["nick"] == "NickServ") {
+
+            if (raw["args"][1].indexOf("IDENTIFY") > -1) {
+
+                bot.say("nickserv", "identify " + config.bot_pass);
+                logger.info("Nickserv: identify *pass*");
+
+                authed = true;
+
+            }
+
+            if (raw["args"][1].indexOf("incorrect") > -1) {
+
+                logger.info("NickServ: Incorrect password :(");
+                process.exit();
+
+            }
+
+            if (raw["args"][1].indexOf("accepted") > -1) {
+
+                if (config.bot_vhost == true) {
+
+                    bot.say("hostserv", "on");
+                    logger.info("HostServ: on");
+
+                } else {
+
+                    for (channel of config.channels) {
+                        bot.join(channel);
+                    }
+
+                    logger.info("We join");
+
+                }
+
+            }
+
         }
-        logger.info("We join");
+
+        if (raw["nick"] == "HostServ") {
+            if (raw["args"][1].indexOf("activated")) {
+                for (channel of config.channels) {
+                    bot.join(channel);
+                }
+
+                logger.info("We join");
+
+            }
+
+        }
+
+    });
+
+} else {
+
+    for (channel of config.channels) {
+        bot.join(channel);
     }
 
-});
+    logger.info("We join");
+
+}
 
 var app = express();
 var jp = body_parser.json()
