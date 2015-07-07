@@ -103,11 +103,13 @@ if (nconf.get('bot_registered') == true) {
 
 } else {
 
-    for (channel of channels) {
-        bot.join(channel);
-    }
+    bot.addListener('registered', function() {
+        for (channel of channels) {
+            bot.join(channel);
+        }
 
-    logger.info("We join");
+        logger.info("We join");
+    });
 
 }
 
