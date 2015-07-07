@@ -1,13 +1,13 @@
 // requires
-var irc = require("irc");
-var express = require("express");
-var log4js = require("log4js");
-var body_parser = require("body-parser");
-var util = require("util");
-var isgd = require('isgd');
-var nconf = require('nconf');
+const irc = require("irc");
+const express = require("express");
+const log4js = require("log4js");
+const body_parser = require("body-parser");
+const util = require("util");
+const isgd = require('isgd');
+const nconf = require('nconf');
 
-var logger = log4js.getLogger();
+const logger = log4js.getLogger();
 logger.info("bot starting...");
 
 // load configuration from nconf
@@ -27,13 +27,13 @@ nconf.argv().env().file('config.json').defaults({
 });
 
 // make sure the channel list is an array
-var channels = nconf.get('channels');
+const channels = nconf.get('channels');
 
 if (!Array.isArray(channels)) {
     channels = [ channels ];
 }
 
-var bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
+const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
     userName: nconf.get('bot_user'),
     realName: nconf.get('bot_real'),
     encoding: "utf-8"
@@ -113,8 +113,8 @@ if (nconf.get('bot_registered') == true) {
 
 }
 
-var app = express();
-var jp = body_parser.json()
+const app = express();
+const jp = body_parser.json()
 
 app.get("/", function(req, res){
     res.send("ww");
