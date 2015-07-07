@@ -18,7 +18,7 @@ var config = {
     bot_name: "avail",
     bot_pass: "omfgwtf1235",
     bot_registered: true, // is the bot registered? (true or false)
-    bot_vhost: true, // does the bot have a VHost assigned?
+    bot_vhost: false, // does the bot have a VHost assigned?
     bot_user: "nyan",
     bot_real: "Avail's Gitlab hook bot",
 
@@ -38,8 +38,6 @@ bot.addListener("error", function(message) {
 
 if (config.bot_registered == true) {
 
-    var authed = false;
-
     bot.addListener('raw', function(message) {
 
         raw = message;
@@ -49,8 +47,6 @@ if (config.bot_registered == true) {
 
                 bot.say("nickserv", "identify " + config.bot_pass);
                 logger.info("Nickserv: identify *pass*");
-
-                authed = true;
 
             }
 
