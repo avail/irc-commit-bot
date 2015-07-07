@@ -61,7 +61,7 @@ app.get("/", function(req, res){
     res.send("ww");
 });
 
-app.post("/gitlab.json", jp, function (req, res) {
+app.post("/git.json", jp, function (req, res) {
 
     logger.info("*pacman ghost sounds*");
     if (!req.body) return res.sendStatus(400)
