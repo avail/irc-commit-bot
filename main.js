@@ -74,19 +74,23 @@ app.post("/git.json", jp, function (req, res) {
 
             if (req.headers["x-gitlab-event"] != null) {
 
+                var service = "Gitlab";
                 var repository_url = req.body["repository"]["homepage"];
                 var repository_name = req.body["repository"]["name"];
                 var user_name = req.body["user_name"];
                 var commits_count = req.body["total_commits_count"];
                 var branch = req.body["ref"].split("/")[2];
+                var commit_name = "name";
 
             } else if (req.headers["x-github-event"]) {
 
+                var service = "Github";
                 var repository_url = req.body["repository"]["html_url"];
                 var repository_name = req.body["repository"]["name"];
                 var user_name = req.body["pusher"]["name"];
                 var commits_count = req.body["commits"].length;
                 var branch = req.body["ref"].split("/")[2];
+                var commit_name = "username";
 
             }
 
@@ -105,7 +109,7 @@ app.post("/git.json", jp, function (req, res) {
                 var reply_commits = util.format("\t\x02\x0306～\x03 %s\x02: %s (\x02%s\x02)",
                     commit["id"].substring(0, 7),
                     commit["message"].replace(/[\r\n]/g, "").replace(/[\n]/g, ""),
-                    commit["author"]["name"]);
+                    commit["author"][commit_name]);
 
                 for (var channel of config.channels) {
                     bot.say(channel, reply_commits);
@@ -116,7 +120,7 @@ app.post("/git.json", jp, function (req, res) {
                 bot.say(channel, "View more at " + repository_url);
             }
 
-            logger.info("Push");
+            logger.info(service + ": [" + repository_name + "/" + branch + "] "+ user_name + " pushed " + commits_count + " new commit" + commits_count == 1 ? "" : "s");
 
         // ---------------------------------------------- \\
         //                                                \\
@@ -143,6 +147,7 @@ app.post("/git.json", jp, function (req, res) {
                     break;
                 }
 
+                var service = "Gitlab";
                 var issue_id = req.body["object_attributes"]["iid"];
                 var issue_title = req.body["object_attributes"]["title"];
                 var issue_user = req.body["user"]["name"];
@@ -165,6 +170,7 @@ app.post("/git.json", jp, function (req, res) {
                     break;
                 }
 
+                var service = "Github";
                 var issue_id = req.body["issue"]["number"];
                 var issue_title = req.body["issue"]["title"];
                 var issue_user = req.body["issue"]["user"]["login"];
@@ -181,7 +187,7 @@ app.post("/git.json", jp, function (req, res) {
                     issue_url));
             }
 
-            logger.info("Issue");
+            logger.info(service + ": " + issue_user + " opened issue #" + issue_id);
 
         // ---------------------------------------------- \\
         //                                                \\
@@ -218,7 +224,7 @@ app.post("/git.json", jp, function (req, res) {
                 }
             });
 
-            logger.info("Gitlab: " + type + " comment");
+            logger.info("Gitlab: " + type + " comment by " +  req.body["user"]["name"]);
 
         } else if (req.headers["x-github-event"] == "commit_comment") {
 
@@ -230,7 +236,7 @@ app.post("/git.json", jp, function (req, res) {
                 }
             });
 
-            logger.info("Github: commit comment");
+            logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
 
         } else if (req.headers["x-github-event"] == "issue_comment") {
 
@@ -246,7 +252,7 @@ app.post("/git.json", jp, function (req, res) {
                     }
                 });
 
-                logger.info("Github: issue comment");
+                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
 
             } else { // otherwise it's a pull request
 
@@ -259,7 +265,7 @@ app.post("/git.json", jp, function (req, res) {
                     }
                 });
 
-                logger.info("Github: pull request comment");
+                logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
 
             }
 
