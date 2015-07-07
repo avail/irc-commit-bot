@@ -64,6 +64,11 @@ app.post("/git.json", jp, function (req, res) {
     logger.info("*pacman ghost sounds*");
     if (!req.body) return res.sendStatus(400)
 
+        // ---------------------------------------------- \\
+        //                                                \\
+        //                  PUSH HOOK                     \\
+        //                                                \\
+        // ---------------------------------------------- \\
         if (req.headers["x-gitlab-event"] == "Push Hook" || req.headers["x-github-event"] == "push") {
 
             if (req.headers["x-gitlab-event"] != null) {
@@ -110,8 +115,13 @@ app.post("/git.json", jp, function (req, res) {
                 bot.say(channel, "View more at " + repository_url);
             }
 
-            logger.info("Push Hook");
+            logger.info("Push");
 
+        // ---------------------------------------------- \\
+        //                                                \\
+        //                  ISSUE HOOK                    \\
+        //                                                \\
+        // ---------------------------------------------- \\
         } else if (req.headers["x-gitlab-event"] == "Issue Hook" || req.headers["x-github-event"] == "issues") {
 
             if (req.headers["x-gitlab-event"] != null) {
@@ -170,9 +180,14 @@ app.post("/git.json", jp, function (req, res) {
                     issue_url));
             }
 
-            logger.info("Issue Hook");
+            logger.info("Issue");
 
-            // TODO: Implement Github for comments, there's a lot of stuff to be modified here
+        // ---------------------------------------------- \\
+        //                                                \\
+        //                 COMMENT HOOK                   \\
+        //                                                \\
+        // ---------------------------------------------- \\
+        // TODO: Implement Github for comments, there's a lot of stuff to be modified here
         } else if (req.headers["x-gitlab-event"] == "Note Hook") {
 
             var type = "";
@@ -204,8 +219,13 @@ app.post("/git.json", jp, function (req, res) {
                 }
             });
 
-            logger.info("Note Hook");
+            logger.info("Comment");
 
+        // ---------------------------------------------- \\
+        //                                                \\
+        //               MERGE REQUEST HOOK               \\
+        //                                                \\
+        // ---------------------------------------------- \\
         } else if (req.headers["x-gitlab-event"] == "Merge Request Hook" || req.headers["x-github-event"] == "pull_request") {
 
             if (req.headers["x-gitlab-event"] != null) {
