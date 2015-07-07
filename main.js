@@ -5,12 +5,13 @@ var log4js = require("log4js");
 var body_parser = require("body-parser");
 var util = require("util");
 var isgd = require('isgd');
+var nconf = require('nconf');
 
 var logger = log4js.getLogger();
 logger.info("bot starting...");
 
-// configuration
-var config = {
+// load configuration from nconf
+nconf.argv().env().file('config.json').defaults({
     // irc
     channels: ["#availtesting"],
     server: "irc.rizon.net",
@@ -22,12 +23,19 @@ var config = {
     bot_real: "Avail's Gitlab hook bot",
 
     // git listen port
-    port: 4021
-};
+    port: 4021    
+});
 
-var bot = new irc.Client(config.server, config.bot_name, {
-    userName: config.bot_user,
-    realName: config.bot_real,
+// make sure the channel list is an array
+var channels = nconf.get('channels');
+
+if (!Array.isArray(channels)) {
+    channels = [ channels ];
+}
+
+var bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
+    userName: nconf.get('bot_user'),
+    realName: nconf.get('bot_real'),
     encoding: "utf-8"
 });
 
@@ -35,7 +43,7 @@ bot.addListener("error", function(message) {
     logger.info("irc died: ", message);
 });
 
-if (config.bot_registered == true) {
+if (nconf.get('bot_registered') == true) {
 
     bot.addListener('raw', function(message) {
 
@@ -44,7 +52,7 @@ if (config.bot_registered == true) {
 
             if (raw["args"][1].indexOf("IDENTIFY") > -1) {
 
-                bot.say("nickserv", "identify " + config.bot_pass);
+                bot.say("nickserv", "identify " + nconf.get('bot_pass'));
                 logger.info("Nickserv: identify *pass*");
 
             }
@@ -58,14 +66,14 @@ if (config.bot_registered == true) {
 
                 if (raw["args"][1].indexOf("accepted") > -1) {
 
-                    if (config.bot_vhost == true) {
+                    if (nconf.get('bot_vhost') == true) {
 
                         bot.say("hostserv", "on");
                         logger.info("HostServ: on");
 
                     } else {
 
-                        for (channel of config.channels) {
+                        for (channel of channels) {
                             bot.join(channel);
                         }
 
@@ -81,7 +89,7 @@ if (config.bot_registered == true) {
 
                 if (raw["args"][1].indexOf("activated") > -1) {
 
-                    for (channel of config.channels) {
+                    for (channel of channels) {
                         bot.join(channel);
                     }
 
@@ -95,7 +103,7 @@ if (config.bot_registered == true) {
 
 } else {
 
-    for (channel of config.channels) {
+    for (channel of channels) {
         bot.join(channel);
     }
 
@@ -151,7 +159,7 @@ app.post("/git.json", jp, function (req, res) {
                 commits_count == 1 ? "" : "s",
                 branch);
 
-            for (var channel of config.channels) {
+            for (var channel of channels) {
                 bot.say(channel, reply);
             }
 
@@ -162,13 +170,13 @@ app.post("/git.json", jp, function (req, res) {
                     commit["message"].replace(/[\r\n]/g, "").replace(/[\n]/g, ""),
                     commit["author"][commit_name]);
 
-                for (var channel of config.channels) {
+                for (var channel of channels) {
                     bot.say(channel, reply_commits);
                 }
 
             }
 
-            for (var channel of config.channels) {
+            for (var channel of channels) {
                 bot.say(channel, "View more at " + repository_url);
             }
 
@@ -234,7 +242,7 @@ app.post("/git.json", jp, function (req, res) {
 
         }
 
-        for (var channel of config.channels) {
+        for (var channel of channels) {
 
             bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
                 issue_id,
@@ -276,7 +284,7 @@ app.post("/git.json", jp, function (req, res) {
 
         isgd.shorten(req.body["object_attributes"]["url"], function(resp) {
 
-            for (var channel of config.channels) {
+            for (var channel of channels) {
 
                 bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on %s - %s",
                     req.body["user"]["name"],
@@ -292,7 +300,7 @@ app.post("/git.json", jp, function (req, res) {
     } else if (req.headers["x-github-event"] == "commit_comment") {
 
         isgd.shorten(req.body["comment"]["html_url"], function(resp) {
-            for (var channel of config.channels) {
+            for (var channel of channels) {
                 bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on a commit - %s",
                     req.body["comment"]["user"]["login"],
                     resp));
@@ -308,7 +316,7 @@ app.post("/git.json", jp, function (req, res) {
 
             isgd.shorten(req.body["issue"]["html_url"], function(resp) {
 
-                for (var channel of config.channels) {
+                for (var channel of channels) {
 
                     bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
                         req.body["issue"]["user"]["login"],
@@ -324,7 +332,7 @@ app.post("/git.json", jp, function (req, res) {
         } else { // otherwise it's a pull request
 
             isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-                for (var channel of config.channels) {
+                for (var channel of channels) {
                     bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on pull request \"%s\" - %s",
                         req.body["issue"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
@@ -400,7 +408,7 @@ app.post("/git.json", jp, function (req, res) {
 
             isgd.shorten(merge_url, function(resp) {
 
-                for (var channel of config.channels) {
+                for (var channel of channels) {
 
                     bot.say(channel, util.format("\x02\x0306Merge request\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s by %s - %s",
                         merge_id,
@@ -421,5 +429,5 @@ app.post("/git.json", jp, function (req, res) {
     res.end();
 })
 
-app.listen(config.port);
-logger.info("listening on port " + config.port);
+app.listen(nconf.get('port'));
+logger.info("listening on port " + nconf.get('port'));
