@@ -80,7 +80,7 @@ if (config.bot_registered == true) {
 
             if (raw["nick"] == "HostServ") {
 
-                if (raw["args"][1].indexOf("activated")) {
+                if (raw["args"][1].indexOf("activated") > -1) {
 
                     for (channel of config.channels) {
                         bot.join(channel);
