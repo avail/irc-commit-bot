@@ -120,7 +120,7 @@ app.post("/git.json", jp, function (req, res) {
                 bot.say(channel, "View more at " + repository_url);
             }
 
-            logger.info(service + ": [" + repository_name + "/" + branch + "] "+ user_name + " pushed " + commits_count + " new commit" + commits_count == 1 ? "" : "s");
+            logger.info(service + ": [" + repository_name + "/" + branch + "] "+ user_name + " pushed " + commits_count + " new commit(s)");
 
         // ---------------------------------------------- \\
         //                                                \\
