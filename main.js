@@ -37,15 +37,13 @@ bot.addListener("error", function(message) {
 var authed = false;
 bot.addListener("notice", function (from, message) {
 
-    if (from == "Global" && authed == false) { // assume we're completely connected
-        bot.say("nickserv", "identify " + config.bot_pass); // we identify to nickserv
+    if (from == "NickServ" && authed == false) {
+        bot.say("nickserv", "identify " + config.bot_pass);
         logger.info("We auth");
         bot.say("hostserv", "on");
         logger.info("We vhost");
         authed = true;
-    }
 
-    if (from == "HostServ") {
         for (channel of config.channels) {
             bot.join(channel);
         }
@@ -66,7 +64,7 @@ app.post("/git.json", jp, function (req, res) {
     logger.info("*pacman ghost sounds*");
     if (!req.body) return res.sendStatus(400)
 
-        if (req.headers["x-gitlab-event"] == "Push Hook") {
+        if (req.headers["x-gitlab-event"] == "Push Hook" || req.headers["x-github-event"] == "push") {
 
             var reply = util.format("\x02\x0306Commit\x03\x02: \x02\x0303%s\x03\x02 - %s pushed %d new commit%s to branch \x02%s\x02:",
                 req.body["repository"]["name"],
@@ -96,7 +94,7 @@ app.post("/git.json", jp, function (req, res) {
 
             logger.info("Push Hook");
 
-        } else if (req.headers["x-gitlab-event"] == "Issue Hook") {
+        } else if (req.headers["x-gitlab-event"] == "Issue Hook" || req.headers["x-github-event"] == "issues") {
 
             var type = "";
             switch(req.body["object_attributes"]["action"].toLowerCase()) {
@@ -128,6 +126,7 @@ app.post("/git.json", jp, function (req, res) {
 
             logger.info("Issue Hook");
 
+            // TODO: Implement Github for comments, there's a lot of stuff to be modified here
         } else if (req.headers["x-gitlab-event"] == "Note Hook") {
 
             var type = "";
@@ -161,7 +160,7 @@ app.post("/git.json", jp, function (req, res) {
 
             logger.info("Note Hook");
 
-        } else if (req.headers["x-gitlab-event"] == "Merge Request Hook") {
+        } else if (req.headers["x-gitlab-event"] == "Merge Request Hook" || req.headers["x-github-event"] == "pull_request") {
 
             var type = "";
             switch(req.body["object_attributes"]["state"].toLowerCase()) {
