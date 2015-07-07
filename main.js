@@ -53,18 +53,34 @@ if (config.bot_registered == true) {
             if (raw["args"][1].indexOf("incorrect") > -1) {
 
                 logger.info("NickServ: Incorrect password :(");
-                process.exit();
+                    process.exit();
+
+                }
+
+                if (raw["args"][1].indexOf("accepted") > -1) {
+
+                    if (config.bot_vhost == true) {
+
+                        bot.say("hostserv", "on");
+                        logger.info("HostServ: on");
+
+                    } else {
+
+                        for (channel of config.channels) {
+                            bot.join(channel);
+                        }
+
+                        logger.info("We join");
+
+                    }
+
+                }
 
             }
 
-            if (raw["args"][1].indexOf("accepted") > -1) {
+            if (raw["nick"] == "HostServ") {
 
-                if (config.bot_vhost == true) {
-
-                    bot.say("hostserv", "on");
-                    logger.info("HostServ: on");
-
-                } else {
+                if (raw["args"][1].indexOf("activated")) {
 
                     for (channel of config.channels) {
                         bot.join(channel);
@@ -76,21 +92,7 @@ if (config.bot_registered == true) {
 
             }
 
-        }
-
-        if (raw["nick"] == "HostServ") {
-            if (raw["args"][1].indexOf("activated")) {
-                for (channel of config.channels) {
-                    bot.join(channel);
-                }
-
-                logger.info("We join");
-
-            }
-
-        }
-
-    });
+        });
 
 } else {
 
@@ -155,6 +157,7 @@ app.post("/git.json", jp, function (req, res) {
             }
 
             for (var commit of req.body["commits"]) {
+
                 var reply_commits = util.format("\t\x02\x0306～\x03 %s\x02: %s (\x02%s\x02)",
                     commit["id"].substring(0, 7),
                     commit["message"].replace(/[\r\n]/g, "").replace(/[\n]/g, ""),
@@ -163,6 +166,7 @@ app.post("/git.json", jp, function (req, res) {
                 for (var channel of config.channels) {
                     bot.say(channel, reply_commits);
                 }
+
             }
 
             for (var channel of config.channels) {
@@ -176,230 +180,253 @@ app.post("/git.json", jp, function (req, res) {
         //                  ISSUE HOOK                    \\
         //                                                \\
         // ---------------------------------------------- \\
-        } else if (req.headers["x-gitlab-event"] == "Issue Hook" || req.headers["x-github-event"] == "issues") {
+    } else if (req.headers["x-gitlab-event"] == "Issue Hook" || req.headers["x-github-event"] == "issues") {
 
-            if (req.headers["x-gitlab-event"] != null) {
+        if (req.headers["x-gitlab-event"] != null) {
 
-                if(req.body["object_attributes"]["action"] == "update") return res.sendStatus(400);
+            if(req.body["object_attributes"]["action"] == "update") return res.sendStatus(400);
 
-                switch(req.body["object_attributes"]["action"].toLowerCase()) {
-                    case "open":
-                    var type = "Issue opened by ";
-                    break;
+            switch(req.body["object_attributes"]["action"].toLowerCase()) {
 
-                    case "close":
-                    var type = "Issue closed by ";
-                    break;
+                case "open":
+                var type = "Issue opened by ";
+                break;
 
-                    case "reopen":
-                    var type = "Issue reopened by ";
-                    break;
-                }
+                case "close":
+                var type = "Issue closed by ";
+                break;
 
-                var service = "Gitlab";
-                var issue_id = req.body["object_attributes"]["iid"];
-                var issue_title = req.body["object_attributes"]["title"];
-                var issue_user = req.body["user"]["name"];
-                var issue_url = req.body["object_attributes"]["url"];
-
-
-            } else if (req.headers["x-github-event"]) {
-
-                switch(req.body["action"].toLowerCase()) {
-                    case "opened":
-                    var type = "Issue opened by ";
-                    break;
-
-                    case "closed":
-                    var type = "Issue closed by ";
-                    break;
-
-                    case "reopened":
-                    var type = "Issue reopened by ";
-                    break;
-                }
-
-                var service = "Github";
-                var issue_id = req.body["issue"]["number"];
-                var issue_title = req.body["issue"]["title"];
-                var issue_user = req.body["issue"]["user"]["login"];
-                var issue_url = req.body["issue"]["html_url"];
+                case "reopen":
+                var type = "Issue reopened by ";
+                break;
 
             }
 
-            for (var channel of config.channels) {
-                bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
-                    issue_id,
-                    issue_title,
-                    type,
-                    issue_user,
-                    issue_url));
+            var service = "Gitlab";
+            var issue_id = req.body["object_attributes"]["iid"];
+            var issue_title = req.body["object_attributes"]["title"];
+            var issue_user = req.body["user"]["name"];
+            var issue_url = req.body["object_attributes"]["url"];
+
+
+        } else if (req.headers["x-github-event"]) {
+
+            switch(req.body["action"].toLowerCase()) {
+
+                case "opened":
+                var type = "Issue opened by ";
+                break;
+
+                case "closed":
+                var type = "Issue closed by ";
+                break;
+
+                case "reopened":
+                var type = "Issue reopened by ";
+                break;
+
             }
 
-            logger.info(service + ": " + issue_user + " opened issue #" + issue_id);
+            var service = "Github";
+            var issue_id = req.body["issue"]["number"];
+            var issue_title = req.body["issue"]["title"];
+            var issue_user = req.body["issue"]["user"]["login"];
+            var issue_url = req.body["issue"]["html_url"];
+
+        }
+
+        for (var channel of config.channels) {
+
+            bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
+                issue_id,
+                issue_title,
+                type,
+                issue_user,
+                issue_url));
+
+        }
+
+        logger.info(service + ": " + issue_user + " opened issue #" + issue_id);
 
         // ---------------------------------------------- \\
         //                                                \\
         //                 COMMENT HOOK                   \\
         //                                                \\
         // ---------------------------------------------- \\
-        } else if (req.headers["x-gitlab-event"] == "Note Hook") {
+    } else if (req.headers["x-gitlab-event"] == "Note Hook") {
 
-            switch(req.body["object_attributes"]["noteable_type"].toLowerCase()) {
-                case "commit":
-                var type = "commit \x02\x0303" + req.body["commit"]["message"] + "\x03\x02";
-                break;
+        switch(req.body["object_attributes"]["noteable_type"].toLowerCase()) {
 
-                case "mergerequest":
-                var type = "merge request \x02\x0303" + req.body["merge_request"]["title"] + "\x03\x02";
-                break;
+            case "commit":
+            var type = "commit \x02\x0303" + req.body["commit"]["message"] + "\x03\x02";
+            break;
 
-                case "issue":
-                var type = "issue \x02\x0303" + req.body["issue"]["title"] + "\x03\x02";
-                break;
+            case "mergerequest":
+            var type = "merge request \x02\x0303" + req.body["merge_request"]["title"] + "\x03\x02";
+            break;
 
-                case "snippet":
-                var type = "snippet \x02\x0303" + req.body["snippet"]["title"] + "\x03\x02";
-                break;
+            case "issue":
+            var type = "issue \x02\x0303" + req.body["issue"]["title"] + "\x03\x02";
+            break;
+
+            case "snippet":
+            var type = "snippet \x02\x0303" + req.body["snippet"]["title"] + "\x03\x02";
+            break;
+
+        }
+
+        isgd.shorten(req.body["object_attributes"]["url"], function(resp) {
+
+            for (var channel of config.channels) {
+
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on %s - %s",
+                    req.body["user"]["name"],
+                    type.replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                    resp));
 
             }
 
-            isgd.shorten(req.body["object_attributes"]["url"], function(resp) {
+        });
+
+        logger.info("Gitlab: " + type + " comment by " +  req.body["user"]["name"]);
+
+    } else if (req.headers["x-github-event"] == "commit_comment") {
+
+        isgd.shorten(req.body["comment"]["html_url"], function(resp) {
+            for (var channel of config.channels) {
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on a commit - %s",
+                    req.body["comment"]["user"]["login"],
+                    resp));
+            }
+        });
+
+        logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
+
+    } else if (req.headers["x-github-event"] == "issue_comment") {
+
+        var split_url = req.body["issue"]["html_url"].split('/');
+        if (split_url[split_url.length - 2] == "issues") { // if it's an issue
+
+            isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+
                 for (var channel of config.channels) {
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on %s - %s",
-                        req.body["user"]["name"],
-                        type.replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
+                        req.body["issue"]["user"]["login"],
+                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                        resp));
+
+                }
+
+            });
+
+            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+
+        } else { // otherwise it's a pull request
+
+            isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+                for (var channel of config.channels) {
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on pull request \"%s\" - %s",
+                        req.body["issue"]["user"]["login"],
+                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         resp));
                 }
             });
 
-            logger.info("Gitlab: " + type + " comment by " +  req.body["user"]["name"]);
+            logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
 
-        } else if (req.headers["x-github-event"] == "commit_comment") {
-
-            isgd.shorten(req.body["comment"]["html_url"], function(resp) {
-                for (var channel of config.channels) {
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on a commit - %s",
-                        req.body["comment"]["user"]["login"],
-                        resp));
-                }
-            });
-
-            logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
-
-        } else if (req.headers["x-github-event"] == "issue_comment") {
-
-            var split_url = req.body["issue"]["html_url"].split('/');
-            if (split_url[split_url.length - 2] == "issues") { // if it's an issue
-
-                isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-                    for (var channel of config.channels) {
-                        bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
-                            req.body["issue"]["user"]["login"],
-                            "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                            resp));
-                    }
-                });
-
-                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
-
-            } else { // otherwise it's a pull request
-
-                isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-                    for (var channel of config.channels) {
-                        bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on pull request \"%s\" - %s",
-                            req.body["issue"]["user"]["login"],
-                            "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                            resp));
-                    }
-                });
-
-                logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
-
-            }
+        }
 
         // ---------------------------------------------- \\
         //                                                \\
         //               MERGE REQUEST HOOK               \\
         //                                                \\
         // ---------------------------------------------- \\
-        } else if (req.headers["x-gitlab-event"] == "Merge Request Hook" || req.headers["x-github-event"] == "pull_request") {
+    } else if (req.headers["x-gitlab-event"] == "Merge Request Hook" || req.headers["x-github-event"] == "pull_request") {
 
-            if (req.headers["x-gitlab-event"] != null) {
-                switch(req.body["object_attributes"]["state"].toLowerCase()) {
-                    case "opened":
-                    var type = "Opened";
-                    break;
+        if (req.headers["x-gitlab-event"] != null) {
 
-                    case "merged":
-                    var type = "Merged";
-                    break;
+            switch(req.body["object_attributes"]["state"].toLowerCase()) {
+                case "opened":
+                var type = "Opened";
+                break;
 
-                    case "closed":
-                    var type = "Closed";
-                    break;
+                case "merged":
+                var type = "Merged";
+                break;
 
-                    case "reopened":
-                    var type = "Reopened";
-                    break;
-                }
+                case "closed":
+                var type = "Closed";
+                break;
 
-                var action = req.body["object_attributes"]["action"];
-                var merge_url = req.body["object_attributes"]["url"];
-                var merge_id = req.body["object_attributes"]["iid"];
-                var merge_title = req.body["object_attributes"]["title"];
-                var merge_user = req.body["user"]["name"];
-
-            } else if (req.headers["x-github-event"]) {
-
-                switch(req.body["action"].toLowerCase()) {
-                    case "opened":
-                    var type = "Opened";
-                    break;
-
-                    case "closed":
-                    var type = "Closed";
-                    break;
-
-                    case "reopened":
-                    var type = "Reopened";
-                    break;
-                }
-
-                if (req.body["pull_request"]["merged"] == true)
-                    type = "Merged";
-
-                var action = req.body["action"];
-                var merge_url = req.body["pull_request"]["html_url"];
-                var merge_id = req.body["pull_request"]["number"];
-                var merge_title = req.body["pull_request"]["title"];
-                var merge_user = req.body["pull_request"]["user"]["login"];
+                case "reopened":
+                var type = "Reopened";
+                break;
             }
 
-            if (action == "open" || action == "close" || action == "reopen" || action == "opened" || action == "closed" || action == "reopened" || type == "Merged") {
-                isgd.shorten(merge_url, function(resp) {
-                    for (var channel of config.channels) {
-                        bot.say(channel, util.format("\x02\x0306Merge request\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s by %s - %s",
-                            merge_id,
-                            merge_title,
-                            type,
-                            merge_user,
-                            resp));
-                    }
-                });
+            var action = req.body["object_attributes"]["action"];
+            var merge_url = req.body["object_attributes"]["url"];
+            var merge_id = req.body["object_attributes"]["iid"];
+            var merge_title = req.body["object_attributes"]["title"];
+            var merge_user = req.body["user"]["name"];
+
+        } else if (req.headers["x-github-event"]) {
+
+            switch(req.body["action"].toLowerCase()) {
+                case "opened":
+                var type = "Opened";
+                break;
+
+                case "closed":
+                var type = "Closed";
+                break;
+
+                case "reopened":
+                var type = "Reopened";
+                break;
             }
 
-            logger.info("Merge Request");
+            if (req.body["pull_request"]["merged"] == true)
+                type = "Merged";
+
+            var action = req.body["action"];
+            var merge_url = req.body["pull_request"]["html_url"];
+            var merge_id = req.body["pull_request"]["number"];
+            var merge_title = req.body["pull_request"]["title"];
+            var merge_user = req.body["pull_request"]["user"]["login"];
+
         }
 
-        res.sendStatus(200);
-        res.end();
-    })
+        if (action == "open" || action == "close" || action == "reopen" || action == "opened" || action == "closed" || action == "reopened" || type == "Merged") {
+
+            isgd.shorten(merge_url, function(resp) {
+
+                for (var channel of config.channels) {
+
+                    bot.say(channel, util.format("\x02\x0306Merge request\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s by %s - %s",
+                        merge_id,
+                        merge_title,
+                        type,
+                        merge_user,
+                        resp));
+                }
+
+            });
+
+        }
+
+        logger.info("Merge Request");
+    }
+
+    res.sendStatus(200);
+    res.end();
+})
 
 var nserver = require("http").createServer(app), io = io.listen(nserver, { log: false });
 
 io.sockets.on("connection", function(socket)
 {
+
     var conn = new ClientConnection(server.instance);
 
     conn.on("message", function(cn, message)
@@ -413,6 +440,7 @@ io.sockets.on("connection", function(socket)
     });
 
     conn.bindToWeb(socket);
+
 });
 
 nserver.listen(config.port);
