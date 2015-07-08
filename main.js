@@ -50,7 +50,7 @@ if (nconf.get('bot_registered') == true) {
         raw = message;
         if (raw["nick"] == "NickServ") {
 
-            if (raw["args"][1].indexOf("IDENTIFY") > -1) {
+            if (raw["args"][1].toLowerCase().indexOf("identify") > -1) {
 
                 bot.say("nickserv", "identify " + nconf.get('bot_pass'));
                 logger.info("Nickserv: identify *pass*");
@@ -64,7 +64,7 @@ if (nconf.get('bot_registered') == true) {
 
                 }
 
-                if (raw["args"][1].indexOf("accepted") > -1) {
+                if (raw["args"][1].toLowerCase().indexOf("identified") > -1 || raw["args"][1].toLowerCase().indexOf("recognized") > -1) {
 
                     if (nconf.get('bot_vhost') == true) {
 
