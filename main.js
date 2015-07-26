@@ -321,7 +321,7 @@ app.post("/git.json", jp, function (req, res) {
                 for (var channel of channels) {
 
                     bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
-                        req.body["issue"]["user"]["login"],
+                        req.body["comment"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         resp));
 
