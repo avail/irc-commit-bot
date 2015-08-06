@@ -139,6 +139,8 @@ function doJoin() {
     for (var cb of joinCallbacks) {
         cb();
     }
+
+    joinCallbacks = [];
 }
 
 const app = express();
