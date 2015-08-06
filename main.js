@@ -26,11 +26,22 @@ nconf.argv().env().file('config.json').defaults({
     port: 4021    
 });
 
-// make sure the channel list is an array
-const channels = nconf.get('channels');
+// allow integrarion with third-party port services
+if (process.env.PORT) {
+    nconf.set('port', process.env.PORT);
+}
 
-if (!Array.isArray(channels)) {
-    channels = [ channels ];
+// make sure the channel list is an array
+const channels_conf = nconf.get('channels');
+
+if (!Array.isArray(channels_conf)) {
+    channels_conf = [ channels_conf ];
+}
+
+var channels = [];
+
+for (const channel of channels) {
+    channels.push(channel.indexOf('#') === false ? ('#' + channel) : channel);
 }
 
 const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
