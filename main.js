@@ -40,8 +40,8 @@ if (!Array.isArray(channels_conf)) {
 
 var channels = [];
 
-for (var channel of channels) {
-    channels.push(channel.indexOf('#') === false ? ('#' + channel) : channel);
+for (var channel of channels_conf) {
+    channels.push(channel[0] != '#' ? ('#' + channel) : channel);
 }
 
 const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
