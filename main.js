@@ -32,7 +32,7 @@ if (process.env.PORT) {
 }
 
 // make sure the channel list is an array
-const channels_conf = nconf.get('channels');
+var channels_conf = nconf.get('channels');
 
 if (!Array.isArray(channels_conf)) {
     channels_conf = [ channels_conf ];
