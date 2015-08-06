@@ -149,6 +149,8 @@ app.get("/", function(req, res){
 });
 
 app.post("/git.json", jp, function (req, res) {
+    if (!req.body) return res.sendStatus(400)
+
     if (botJoined) {
         handleAPI(req, res);
     } else {
@@ -156,11 +158,13 @@ app.post("/git.json", jp, function (req, res) {
             handleAPI(req, res);
         });
     }
+
+    res.sendStatus(200);
+    res.end();
 });
 
 function handleAPI(req, res) {
     logger.info("*pacman ghost sounds*");
-    if (!req.body) return res.sendStatus(400)
 
         // ---------------------------------------------- \\
         //                                                \\
@@ -230,7 +234,7 @@ function handleAPI(req, res) {
 
         if (req.headers["x-gitlab-event"] != null) {
 
-            if(req.body["object_attributes"]["action"] == "update") return res.sendStatus(400);
+            if(req.body["object_attributes"]["action"] == "update") return;
 
             switch(req.body["object_attributes"]["action"].toLowerCase()) {
 
@@ -463,9 +467,6 @@ function handleAPI(req, res) {
 
         logger.info("Merge Request");
     }
-
-    res.sendStatus(200);
-    res.end();
 };
 
 app.listen(nconf.get('port'));
