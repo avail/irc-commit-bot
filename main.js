@@ -23,7 +23,7 @@ nconf.argv().env().file('config.json').defaults({
     bot_real: "Avail's Gitlab hook bot",
 
     // git listen port
-    port: 4021    
+    port: 4021
 });
 
 // allow integrarion with third-party port services
@@ -40,7 +40,7 @@ if (!Array.isArray(channels_conf)) {
 
 var channels = [];
 
-for (const channel of channels) {
+for (var channel of channels) {
     channels.push(channel.indexOf('#') === false ? ('#' + channel) : channel);
 }
 
@@ -53,6 +53,9 @@ const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
 bot.addListener("error", function(message) {
     logger.info("irc died: ", message);
 });
+
+var joinCallbacks = [];
+var botJoined = false;
 
 if (nconf.get('bot_registered') == true) {
 
@@ -88,6 +91,8 @@ if (nconf.get('bot_registered') == true) {
                             bot.join(channel);
                         }
 
+                        doJoin();
+
                         logger.info("We join");
 
                     }
@@ -104,6 +109,8 @@ if (nconf.get('bot_registered') == true) {
                         bot.join(channel);
                     }
 
+                    doJoin();
+
                     logger.info("We join");
 
                 }
@@ -119,9 +126,19 @@ if (nconf.get('bot_registered') == true) {
             bot.join(channel);
         }
 
+        doJoin();
+
         logger.info("We join");
     });
 
+}
+
+function doJoin() {
+    botJoined = true;
+
+    for (var cb of joinCallbacks) {
+        cb();
+    }
 }
 
 const app = express();
@@ -132,7 +149,16 @@ app.get("/", function(req, res){
 });
 
 app.post("/git.json", jp, function (req, res) {
+    if (botJoined) {
+        handleAPI(req, res);
+    } else {
+        joinCallbacks.push(function() {
+            handleAPI(req, res);
+        });
+    }
+});
 
+function handleAPI(req, res) {
     logger.info("*pacman ghost sounds*");
     if (!req.body) return res.sendStatus(400)
 
@@ -440,7 +466,7 @@ app.post("/git.json", jp, function (req, res) {
 
     res.sendStatus(200);
     res.end();
-})
+};
 
 app.listen(nconf.get('port'));
 logger.info("listening on port " + nconf.get('port'));
