@@ -182,7 +182,7 @@ function handleAPI(req, res) {
                 var repository_name = req.body["repository"]["name"];
                 var user_name = req.body["user_name"];
                 var commits_count = req.body["total_commits_count"];
-                var branch = req.body["ref"].split("/")[2];
+                var branch = req.body["ref"].split("/").slice(2).join("/");
                 var commit_name = "name";
 
             } else if (req.headers["x-github-event"]) {
@@ -192,7 +192,7 @@ function handleAPI(req, res) {
                 var repository_name = req.body["repository"]["name"];
                 var user_name = req.body["pusher"]["name"];
                 var commits_count = req.body["commits"].length;
-                var branch = req.body["ref"].split("/")[2];
+                var branch = req.body["ref"].split("/").slice(2).join("/");
                 var commit_name = "username";
 
             }
