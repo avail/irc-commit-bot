@@ -302,8 +302,7 @@ function handleAPI(req, res) {
 
                 case "reopen":
                 var type = "Issue reopened by ";
-                break;
-
+                break;	
             }
 
             var service = "Gitlab";
@@ -328,6 +327,10 @@ function handleAPI(req, res) {
                 case "reopened":
                 var type = "Issue reopened by ";
                 break;
+				
+				// ignore undefined things
+				default:
+					return;
 
             }
 
@@ -502,6 +505,10 @@ function handleAPI(req, res) {
                 case "reopened":
                 var type = "Reopened";
                 break;
+				
+				// ignore undefined things
+				default:
+					return;
             }
 
             if (req.body["pull_request"]["merged"] == true)
