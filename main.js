@@ -422,7 +422,7 @@ function handleAPI(req, res) {
         if (split_url[split_url.length - 2] == "issues") { // if it's an issue
 
             //isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-			isgd.shorten(req.body["issue"]["url"], function(resp) {
+			isgd.shorten(req.body["issue"]["html_url"], function(resp) {
 
                 for (var channel of channels) {
 
