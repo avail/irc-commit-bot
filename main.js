@@ -202,7 +202,7 @@ function handleAPI(req, res) {
 
             } else if (req.headers["x-github-event"]) {
 				
-				logger.info(req.body);
+				//logger.info(req.body);
                 var service = "Github";
                 var repository_url = req.body["repository"]["html_url"];
 				var repository_owner = req.body["repository"]["owner"]["name"];
@@ -327,13 +327,17 @@ function handleAPI(req, res) {
             var issue_title = req.body["issue"]["title"];
             var issue_user = req.body["issue"]["user"]["login"];
             var issue_url = req.body["issue"]["html_url"];
+			var repository_name = req.body["repository"]["full_name"];
+			
+			//logger.info(req.body);
 
         }
 
         for (var channel of channels) {
 
-            bot.say(channel, util.format("\x02\x0306Issue\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
-                issue_id,
+            bot.say(channel, util.format("\x02\x0306Issue\x03\x02: %s \x02#%d\x02 \x02\x0303%s\x03\x02 - %s%s - %s",
+                repository_name,
+				issue_id,
                 issue_title,
                 type,
                 issue_user,
