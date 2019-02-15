@@ -507,14 +507,23 @@ function handleAPI(req, res) {
         }
 
         if (action == "open" || action == "close" || action == "reopen" || action == "opened" || action == "closed" || action == "reopened" || type == "Merged") {
-
+			var repository_name = req.body["repository"]["full_name"];
+			//logger.info(req.body);
+			
+			var head = req.body["pull_request"]["head"]["label"];
+			var base = req.body["pull_request"]["base"]["label"];
+			
+			
             isgd.shorten(merge_url, function(resp) {
 
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306Merge request\x03\x02: \x02#%d\x02 \x02\x0303%s\x03\x02 - %s by %s - %s",
-                        merge_id,
+                    bot.say(channel, util.format("\x02\x0306Pull Request\x03\x02: %s \x02#%d\x02 \x02\x0303%s\x03\x02 (%s -> %s) - %s by %s - %s",
+                        repository_name,
+						merge_id,
                         merge_title,
+						head,
+						base,
                         type,
                         merge_user,
                         resp));
