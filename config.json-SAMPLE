@@ -7,5 +7,6 @@
     "bot_vhost" : false,
     "bot_user" : "YourBotUserName",
     "bot_real" : "Your Bot Real Name",
-    "port" : 4021
+    "port" : 4021,
+    "github_secret": ""
 }

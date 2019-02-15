@@ -6,6 +6,7 @@ const body_parser = require("body-parser");
 const util = require("util");
 const isgd = require('isgd');
 const nconf = require('nconf');
+const sha1 = require('js-sha1');
 
 const logger = log4js.getLogger();
 logger.info("bot starting...");
@@ -182,7 +183,15 @@ app.post("/git.json", jp, function (req, res) {
 
 function handleAPI(req, res) {
     logger.info("*pacman ghost sounds*");
-
+	
+	/*
+	if (req.headers["x-hub-signature"] != "sha1=" + sha1(nconf.get("secret"))) {
+		logger.info("Invalid secret passed");
+		return;
+	}
+	*/
+	
+	
         // ---------------------------------------------- \\
         //                                                \\
         //                  PUSH HOOK                     \\
