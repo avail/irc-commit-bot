@@ -201,15 +201,16 @@ function handleAPI(req, res) {
                 var commit_name = "name";
 
             } else if (req.headers["x-github-event"]) {
-
+				
+				logger.info(req.body);
                 var service = "Github";
                 var repository_url = req.body["repository"]["html_url"];
-                var repository_name = req.body["repository"]["name"];
+				var repository_owner = req.body["repository"]["owner"]["name"];
+                var repository_name = req.body["repository"]["full_name"];
                 var user_name = req.body["pusher"]["name"];
                 var commits_count = req.body["commits"].length;
                 var branch = req.body["ref"].split("/").slice(2).join("/");
                 var commit_name = "username";
-
             }
 
             var reply = util.format("\x02\x0306Commit\x03\x02: \x02\x0303%s\x03\x02 - %s pushed %d new commit%s to branch \x02%s\x02:",
@@ -223,21 +224,48 @@ function handleAPI(req, res) {
                 bot.say(channel, reply);
             }
 
+			var commitsToShow = 3;
+			var commitCnt = 0;
+			var commitExtraCnt = 0;
+			
+			for (var commit of req.body["commits"]) {	
+				if (commitCnt >= commitsToShow) {
+					commitExtraCnt++;
+				}
+				else {
+					commitCnt++;
+				}					
+			}
+			
             for (var commit of req.body["commits"]) {
-
-                var reply_commits = util.format("\t\x02\x0306～\x03 %s\x02: %s (\x02%s\x02)",
-                    commit["id"].substring(0, 7),
-                    commit["message"].replace(/[\r\n]/g, "").replace(/[\n]/g, ""),
-                    commit["author"][commit_name]);
-
-                for (var channel of channels) {
-                    bot.say(channel, reply_commits);
-                }
-
+				
+				commitCnt--;
+				
+				// we only want to show max 3 commits
+				if (commitCnt >= 0) {
+					
+					// get shortened commit urls
+					isgd.shorten(commit["url"], function(commitShorter) {
+						var reply_commits = util.format("\t\x02\x0306-\x03 %s\x02: %s (\x02%s\x02) %s",
+						commit["id"].substring(0, 7),
+						commit["message"].replace(/[\r\n]/g, "").replace(/[\n]/g, ""),
+						commit["author"][commit_name],
+						commitShorter);					
+						
+						for (var channel of channels) {
+							bot.say(channel, reply_commits);
+						}
+					});
+				}
+				else {						
+					for (var channel of channels) {
+						bot.say(channel, "...and " + commitExtraCnt + " more commits");
+					}
+				}	
             }
 
             for (var channel of channels) {
-                bot.say(channel, "View more at " + repository_url);
+                //bot.say(channel, "View more at " + repository_url);
             }
 
             logger.info(service + ": [" + repository_name + "/" + branch + "] "+ user_name + " pushed " + commits_count + " new commit(s)");
