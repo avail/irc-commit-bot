@@ -13,14 +13,14 @@ logger.info("bot starting...");
 // load configuration from nconf
 nconf.argv().env().file('config.json').defaults({
     // irc
-    channels: ["#availtesting"],
-    server: "irc.rizon.net",
-    bot_name: "nyanners",
+    channels: ["#githookbottest"],
+    server: "chat.freenode.net",
+    bot_name: "GitHookBot" + Math.floor(1000 + Math.random() * 9000), 
     bot_pass: "",
     bot_registered: false, // is the bot registered? (true or false)
     bot_vhost: false, // does the bot have a VHost assigned?
-    bot_user: "nyan",
-    bot_real: "Avail's Gitlab hook bot",
+    bot_user: "GitHookBot",
+    bot_real: "Git Hook Bot",
 
     // git listen port
     port: 4021
@@ -29,6 +29,7 @@ nconf.argv().env().file('config.json').defaults({
 // allow integrarion with third-party port services
 if (process.env.PORT) {
     nconf.set('port', process.env.PORT);
+	logger.info(nconf.get('port'));
 }
 
 // make sure the channel list is an array
@@ -44,7 +45,8 @@ for (var channel of channels_conf) {
     channels.push(channel[0] != '#' ? ('#' + channel) : channel);
 }
 
-const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
+logger.info("new irc client");
+const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {	
     userName: nconf.get('bot_user'),
     realName: nconf.get('bot_real'),
     encoding: "utf-8"
@@ -52,6 +54,13 @@ const bot = new irc.Client(nconf.get('server'), nconf.get('bot_name'), {
 
 bot.addListener("error", function(message) {
     logger.info("irc died: ", message);
+	
+	// try and rejoin all channels	
+	for (channel of channels) {
+            bot.join(channel);
+        }
+
+        doJoin();
 });
 
 var joinCallbacks = [];
@@ -135,7 +144,7 @@ if (nconf.get('bot_registered') == true) {
 
 function doJoin() {
     botJoined = true;
-
+	logger.info("doJoin()");
     for (var cb of joinCallbacks) {
         cb();
     }
@@ -151,14 +160,20 @@ app.get("/", function(req, res){
 });
 
 app.post("/git.json", jp, function (req, res) {
-    if (!req.body) return res.sendStatus(400)
+	
+    logger.info("Incoming POST");
+	//logger.info(req);
+	
+	if (!req.body) return res.sendStatus(400)
 
     if (botJoined) {
+		logger.info("Calling handleAPI - bot already joined");
         handleAPI(req, res);
     } else {
+		logger.info("Doing callbacks - bot not joined");
         joinCallbacks.push(function() {
             handleAPI(req, res);
-        });
+        });	
     }
 
     res.sendStatus(200);

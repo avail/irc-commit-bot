@@ -1,0 +1,11 @@
+{
+    "channels" : ["#testchannel"],
+    "server" : "chat.freenode.net",
+    "bot_name" : "YourBotNick",
+    "bot_pass" : "",
+    "bot_registered" : false,
+    "bot_vhost" : false,
+    "bot_user" : "YourBotUserName",
+    "bot_real" : "Your Bot Real Name",
+    "port" : 4021
+}

@@ -1,3 +1,9 @@
+# Modifed version of irc-commit-bot
+
+
+
+the original readme.....
+
 # IRC COMMIT BOT
 
 I literally couldn't find anything like this, it's probably just me being bad though.
