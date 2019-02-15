@@ -392,9 +392,13 @@ function handleAPI(req, res) {
     } else if (req.headers["x-github-event"] == "commit_comment") {
 
         isgd.shorten(req.body["comment"]["html_url"], function(resp) {
+			
+			var repository_name = req.body["repository"]["full_name"];
+			
             for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on a commit - %s",
-                    req.body["comment"]["user"]["login"],
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on a commit - %s",
+                    repository_name,
+					req.body["comment"]["user"]["login"],
                     resp));
             }
         });
@@ -403,14 +407,18 @@ function handleAPI(req, res) {
 
     } else if (req.headers["x-github-event"] == "issue_comment") {
 
+		//logger.info(req.body);
+		var repository_name = req.body["repository"]["full_name"];
         var split_url = req.body["issue"]["html_url"].split('/');
         if (split_url[split_url.length - 2] == "issues") { // if it's an issue
 
-            isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+            //isgd.shorten(req.body["issue"]["html_url"], function(resp) {
+			isgd.shorten(req.body["issue"]["url"], function(resp) {
 
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on issue \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on issue \"%s\" - %s",
+						repository_name,
                         req.body["comment"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         resp));
@@ -423,9 +431,11 @@ function handleAPI(req, res) {
 
         } else { // otherwise it's a pull request
 
+			var repository_name = req.body["repository"]["full_name"];
             isgd.shorten(req.body["issue"]["html_url"], function(resp) {
                 for (var channel of channels) {
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s commented on pull request \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on pull request \"%s\" - %s",
+						repository_name,
                         req.body["issue"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         resp));
