@@ -1,6 +1,6 @@
 # Modifed version of irc-commit-bot
 
-####All PRs should be aimed at branch: dev
+#### All PRs should be aimed at branch: dev
 
 
 
