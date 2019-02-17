@@ -181,17 +181,17 @@ app.post("/git.json", jp, function (req, res) {
     res.end();
 });
 
+
 function handleAPI(req, res) {
     logger.info("*pacman ghost sounds*");
-	
-	/*
-	if (req.headers["x-hub-signature"] != "sha1=" + sha1(nconf.get("secret"))) {
-		logger.info("Invalid secret passed");
-		return;
-	}
-	*/
-	
-	
+
+    if (req.headers["x-gitlab-event"] != null) {
+        handleGitLab(req, res);
+    }
+    else if (req.headers["x-github-event"]) {
+        handleGitHub(req, res);
+    }
+
         // ---------------------------------------------- \\
         //                                                \\
         //                  PUSH HOOK                     \\
@@ -551,6 +551,99 @@ function handleAPI(req, res) {
 
         logger.info("Merge Request");
     }
+};
+
+// GitHub related hooks
+function handleGitHub(req, res) {
+
+    // action
+    var action = req.body["action"];
+
+    // repository
+    var repo_name = req.body["repository"]["name"];
+    var repo_full_name = req.body["repository"]["full_name"];
+    var repo_html_url = req.body["repository"]["html_url"];
+
+    // sender
+    var sender_login = req.body["sender"]["login"];
+
+    // parse possible event types
+    switch (req.headers["x-github-event"]) {
+
+        // https://developer.github.com/v3/activity/events/types/#commitcommentevent
+        case "commit_comment":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#issuecommentevent
+        case "issue_comment":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
+        case "pull_request_review_comment":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#createevent
+        case "create":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#deleteevent
+        case "delete":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#issuesevent
+        case "issues":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#labelevent
+        case "label":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#memberevent
+        case "member":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#membershipevent
+        case "membership":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#milestoneevent
+        case "milestone":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#organizationevent
+        case "organization":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#pullrequestevents
+        case "pull_request":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#pullrequestreviewevent
+        case "pull_request_review":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#pushevent
+        case "push":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#releaseevent
+        case "release":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#statusevent
+        case "status":
+            break;
+
+        // https://developer.github.com/v3/activity/events/types/#watchevent
+        case "watch":
+            break;
+    }
+
+};
+
+// GitLab related hooks
+function handleGitLab(req, res) {
+
 };
 
 app.listen(nconf.get('port'));
