@@ -589,17 +589,43 @@ function handleGitHub(req, res) {
                 bot.say(channel, "meh");
                 bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s pull request \"%s\" - %s",
                     repo_full_name,
-                    req.body["issue"]["user"]["login"],
+                    req.body["sender"]["login"],
                     comment_type,
                     "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                     comment_html_url));
             }
-            logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
+            logger.info("Github: pull request comment by " + req.body["sender"]["login"],);
 
             break;
 
         // https://developer.github.com/v3/activity/events/types/#createevent
         case "create":
+
+            var create_type = req.body["ref_type"];
+            var ref = req.body["ref"];
+
+            switch (create_type)
+            {
+                case "branch":
+
+                    for (var channel of channels) {
+                        bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new branch \"%s\" - %s",
+                            repo_full_name,
+                            req.body["sender"]["login"],
+                            ref,
+                            repo_html_url + "/tree/" + ref));
+                    }
+                    logger.info("Github: create branch by " + req.body["sender"]["login"],);
+
+                    break;
+                case "tag":
+                    break;
+                case "repository":
+                default:
+                    return;
+            }
+
+
             break;
 
         // https://developer.github.com/v3/activity/events/types/#deleteevent
