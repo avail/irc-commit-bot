@@ -576,6 +576,10 @@ function handleGitHub(req, res) {
         }
     }
 
+    for (var channel of channels) {
+        bot.say(channel, "meh2");
+    }
+
     // https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
     if (event == "pull_request_review_comment") {
         for (var channel of channels) {
