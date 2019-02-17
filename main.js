@@ -531,7 +531,7 @@ function handleGitHub(req, res) {
         case "commit_comment":
 
             for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on a \x04\x0406commit\x04\x04 - %s",
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on a \x02commit\x02 - %s",
                     repo_full_name,
                     req.body["comment"]["user"]["login"],
                     comment_html_url));
@@ -547,7 +547,7 @@ function handleGitHub(req, res) {
             if (split_url[split_url.length - 2] == "issues") {
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x04\x0406issue\x04\x04 \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x02issue\x02 \"%s\" - %s",
                         repo_full_name,
                         req.body["comment"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
@@ -558,7 +558,7 @@ function handleGitHub(req, res) {
             else {
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x04\x0406PR\x04\x04 \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x02PR\x02 \"%s\" - %s",
                         repo_full_name,
                         req.body["comment"]["user"]["login"],
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
