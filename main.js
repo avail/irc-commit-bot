@@ -615,7 +615,7 @@ function handleGitHub(req, res) {
                             ref,
                             repo_html_url + "/tree/" + ref));
                     }
-                    logger.info("Github: create branch by " + req.body["sender"]["login"]);
+                    //logger.info("Github: create branch by " + req.body["sender"]["login"]);
 
                     break;
                 case "tag":
@@ -623,7 +623,6 @@ function handleGitHub(req, res) {
                 default:
                     return;
             }
-
 
             break;
 
