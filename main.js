@@ -600,7 +600,9 @@ function handleGitHub(req, res) {
 
         // https://developer.github.com/v3/activity/events/types/#createevent
         case "create":
-
+            for (var channel of channels) {
+                bot.say(channel, "meh");
+            }
             var create_type = req.body["ref_type"];
             var ref = req.body["ref"];
 
