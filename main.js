@@ -543,15 +543,29 @@ function handleGitHub(req, res) {
         // https://developer.github.com/v3/activity/events/types/#issuecommentevent
         case "issue_comment":
 
-            for (var channel of channels) {
+            var split_url = req.body["issue"]["html_url"].split('/');
+            if (split_url[split_url.length - 2] == "issues") {
+                for (var channel of channels) {
 
-                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on issue \"%s\" - %s",
-                    repo_full_name,
-                    req.body["comment"]["user"]["login"],
-                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                    comment_html_url));
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on issue \"%s\" - %s",
+                        repo_full_name,
+                        req.body["comment"]["user"]["login"],
+                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                        comment_html_url));
+                }
+                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
             }
-            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+            else {
+                for (var channel of channels) {
+
+                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on PR \"%s\" - %s",
+                        repo_full_name,
+                        req.body["comment"]["user"]["login"],
+                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                        comment_html_url));
+                }
+                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+            }
 
             break;
 
