@@ -509,7 +509,7 @@ function handleAPI(req, res) {
 // GitHub related hooks
 function handleGitHub(req, res) {
     for (var channel of channels) {
-        bot.say(channel, "DEBUG: " + req.headers["x-github-event"] + " : " + req.body["action"] + " : " + req.body["ref_type"]);
+        bot.say(channel, "DEBUG: " + req.headers["x-github-event"] + " : " + req.body["action"] + " : " + req.body["ref_type"] + " : " + req.body["ref"]);
     }
 
     // action
@@ -544,7 +544,7 @@ function handleGitHub(req, res) {
                 comment_type,
                 comment_html_url));
         }
-        logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
+        //logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
     }
 
     //https://developer.github.com/v3/activity/events/types/#issuecommentevent
@@ -560,7 +560,7 @@ function handleGitHub(req, res) {
                     "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                     comment_html_url));
             }
-            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+            //logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
         }
         else {
             for (var channel of channels) {
@@ -572,7 +572,7 @@ function handleGitHub(req, res) {
                     "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                     comment_html_url));
             }
-            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+            //logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
         }
     }
 
@@ -587,7 +587,7 @@ function handleGitHub(req, res) {
                 "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                 comment_html_url));
         }
-        logger.info("Github: pull request comment by " + req.body["sender"]["login"]);
+        //logger.info("Github: pull request comment by " + req.body["sender"]["login"]);
     }
 
     https://developer.github.com/v3/activity/events/types/#createevent
@@ -596,6 +596,22 @@ function handleGitHub(req, res) {
             bot.say(channel, "meh");
         }
 
+        var create_type = req.body["ref_type"];
+        var ref = req.body["ref"];
+
+        if (req.body["ref_type"] == "branch") {
+            for (var channel of channels) {
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new \x02branch\x02 %s - %s",
+                    repo_full_name,
+                    req.body["sender"]["login"],
+                    ref,
+                    repo_html_url + "/tree/" + ref));
+            }
+            logger.info("Github: create branch by " + req.body["sender"]["login"]);
+        }
+        else if (create_type == "tag") {
+
+        }
     }
 
     // parse possible event types
