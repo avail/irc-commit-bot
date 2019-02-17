@@ -604,24 +604,21 @@ function handleGitHub(req, res) {
             var create_type = req.body["ref_type"];
             var ref = req.body["ref"];
 
-            switch (create_type)
-            {
-                case "branch":
+            if (create_type == "branch") {
+                for (var channel of channels) {
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new branch \"%s\" - %s",
+                        repo_full_name,
+                        req.body["sender"]["login"],
+                        ref,
+                        repo_html_url + "/tree/" + ref));
+                }
+                logger.info("Github: create branch by " + req.body["sender"]["login"]);
+            }
+            else if (create_type == "tag") {
 
-                    for (var channel of channels) {
-                        bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new branch \"%s\" - %s",
-                            repo_full_name,
-                            req.body["sender"]["login"],
-                            ref,
-                            repo_html_url + "/tree/" + ref));
-                    }
-                    logger.info("Github: create branch by " + req.body["sender"]["login"]);
-
-                    break;
-                case "tag":
-                    break;
-                default:
-                    return;
+            }
+            else {
+                return;
             }
 
             break;
@@ -677,6 +674,8 @@ function handleGitHub(req, res) {
         // https://developer.github.com/v3/activity/events/types/#watchevent
         case "watch":
             break;
+
+        default:
     }
 
 };
