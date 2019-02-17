@@ -595,22 +595,7 @@ function handleGitHub(req, res) {
         for (var channel of channels) {
             bot.say(channel, "meh");
         }
-        var create_type = req.body["ref_type"];
-        var ref = req.body["ref"];
 
-        if (req.body["ref_type"] == "branch") {
-            for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new \x02branch\x02 %s - %s",
-                    repo_full_name,
-                    req.body["sender"]["login"],
-                    ref,
-                    repo_html_url + "/tree/" + ref));
-            }
-            logger.info("Github: create branch by " + req.body["sender"]["login"]);
-        }
-        else if (create_type == "tag") {
-
-        }
     }
 
     // parse possible event types
