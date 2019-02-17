@@ -522,6 +522,13 @@ function handleGitHub(req, res) {
 
     // comments
     var comment_html_url = req.body["comment"]["html_url"];
+    var comment_type = "commented on";
+    if (action == "edited") {
+        comment_type = "edited a comment on"
+    }
+    else if (action == "deleted") {
+        comment_type = "deleted a comment on"
+    }
 
     // parse possible event types
     // for now do NO url shortening
@@ -531,9 +538,10 @@ function handleGitHub(req, res) {
         case "commit_comment":
 
             for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on a \x02commit\x02 - %s",
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02commit\x02 - %s",
                     repo_full_name,
                     req.body["comment"]["user"]["login"],
+                    comment_type,
                     comment_html_url));
             }
             logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
@@ -547,9 +555,10 @@ function handleGitHub(req, res) {
             if (split_url[split_url.length - 2] == "issues") {
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x02issue\x02 \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02issue\x02 \"%s\" - %s",
                         repo_full_name,
                         req.body["comment"]["user"]["login"],
+                        comment_type,
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         comment_html_url));
                 }
@@ -558,9 +567,10 @@ function handleGitHub(req, res) {
             else {
                 for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s commented on \x02PR\x02 \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02PR\x02 \"%s\" - %s",
                         repo_full_name,
                         req.body["comment"]["user"]["login"],
+                        comment_type,
                         "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                         comment_html_url));
                 }
@@ -573,9 +583,10 @@ function handleGitHub(req, res) {
         case "pull_request_review_comment":
 
             for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on pull request \"%s\" - %s",
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s pull request \"%s\" - %s",
                     repo_full_name,
                     req.body["issue"]["user"]["login"],
+                    comment_type,
                     "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
                     comment_html_url));
             }
