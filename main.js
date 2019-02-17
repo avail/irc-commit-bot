@@ -509,7 +509,7 @@ function handleAPI(req, res) {
 // GitHub related hooks
 function handleGitHub(req, res) {
     for (var channel of channels) {
-        bot.say(channel, "DEBUG: " + req.headers["x-github-event"] + " : " + req.body["action"]);
+        bot.say(channel, "DEBUG: " + req.headers["x-github-event"] + " : " + req.body["action"] + " : " + req.body["ref_type"]);
     }
 
     // action
