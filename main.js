@@ -606,7 +606,7 @@ function handleGitHub(req, res) {
 
             if (create_type == "branch") {
                 for (var channel of channels) {
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new branch \"%s\" - %s",
+                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new \x02branch\x02 %s - %s",
                         repo_full_name,
                         req.body["sender"]["login"],
                         ref,
