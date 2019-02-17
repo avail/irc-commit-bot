@@ -1,10 +1,3 @@
-# Modifed version of irc-commit-bot
-
-#### All PRs should be aimed at branch: dev
-
-
-now, the original readme.....
-
 # IRC COMMIT BOT
 
 I literally couldn't find anything like this, it's probably just me being bad though.
