@@ -403,60 +403,13 @@ function handleAPI(req, res) {
 
     } else if (req.headers["x-github-event"] == "commit_comment") {
 
-        isgd.shorten(req.body["comment"]["html_url"], function(resp) {
-			
-			var repository_name = req.body["repository"]["full_name"];
-			
-            for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on a commit - %s",
-                    repository_name,
-					req.body["comment"]["user"]["login"],
-                    resp));
-            }
-        });
 
-        logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
 
     } else if (req.headers["x-github-event"] == "issue_comment") {
 
-		//logger.info(req.body);
-		var repository_name = req.body["repository"]["full_name"];
-        var split_url = req.body["issue"]["html_url"].split('/');
-        if (split_url[split_url.length - 2] == "issues") { // if it's an issue
 
-            //isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-			isgd.shorten(req.body["issue"]["html_url"], function(resp) {
 
-                for (var channel of channels) {
 
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on issue \"%s\" - %s",
-						repository_name,
-                        req.body["comment"]["user"]["login"],
-                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                        resp));
-
-                }
-
-            });
-
-            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
-
-        } else { // otherwise it's a pull request
-
-			var repository_name = req.body["repository"]["full_name"];
-            isgd.shorten(req.body["issue"]["html_url"], function(resp) {
-                for (var channel of channels) {
-                    bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on pull request \"%s\" - %s",
-						repository_name,
-                        req.body["issue"]["user"]["login"],
-                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                        resp));
-                }
-            });
-
-            logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
-
-        }
 
         // ---------------------------------------------- \\
         //                                                \\
@@ -465,92 +418,92 @@ function handleAPI(req, res) {
         // ---------------------------------------------- \\
     } else if (req.headers["x-gitlab-event"] == "Merge Request Hook" || req.headers["x-github-event"] == "pull_request") {
 
-        if (req.headers["x-gitlab-event"] != null) {
+            if (req.headers["x-gitlab-event"] != null) {
 
-            switch(req.body["object_attributes"]["state"].toLowerCase()) {
-                case "opened":
-                var type = "Opened";
-                break;
+                switch (req.body["object_attributes"]["state"].toLowerCase()) {
+                    case "opened":
+                        var type = "Opened";
+                        break;
 
-                case "merged":
-                var type = "Merged";
-                break;
+                    case "merged":
+                        var type = "Merged";
+                        break;
 
-                case "closed":
-                var type = "Closed";
-                break;
+                    case "closed":
+                        var type = "Closed";
+                        break;
 
-                case "reopened":
-                var type = "Reopened";
-                break;
-            }
-
-            var action = req.body["object_attributes"]["action"];
-            var merge_url = req.body["object_attributes"]["url"];
-            var merge_id = req.body["object_attributes"]["iid"];
-            var merge_title = req.body["object_attributes"]["title"];
-            var merge_user = req.body["user"]["name"];
-
-        } else if (req.headers["x-github-event"]) {
-
-            switch(req.body["action"].toLowerCase()) {
-                case "opened":
-                var type = "Opened";
-                break;
-
-                case "closed":
-                var type = "Closed";
-                break;
-
-                case "reopened":
-                var type = "Reopened";
-                break;
-				
-				// ignore undefined things
-				default:
-					return;
-            }
-
-            if (req.body["pull_request"]["merged"] == true)
-                type = "Merged";
-
-            var action = req.body["action"];
-            var merge_url = req.body["pull_request"]["html_url"];
-            var merge_id = req.body["pull_request"]["number"];
-            var merge_title = req.body["pull_request"]["title"];
-            var merge_user = req.body["pull_request"]["user"]["login"];
-
-        }
-
-        if (action == "open" || action == "close" || action == "reopen" || action == "opened" || action == "closed" || action == "reopened" || type == "Merged") {
-			var repository_name = req.body["repository"]["full_name"];
-			//logger.info(req.body);
-			
-			var head = req.body["pull_request"]["head"]["label"];
-			var base = req.body["pull_request"]["base"]["label"];
-			
-			
-            isgd.shorten(merge_url, function(resp) {
-
-                for (var channel of channels) {
-
-                    bot.say(channel, util.format("\x02\x0306Pull Request\x03\x02: %s \x02#%d\x02 \x02\x0303%s\x03\x02 (%s -> %s) - %s by %s - %s",
-                        repository_name,
-						merge_id,
-                        merge_title,
-						head,
-						base,
-                        type,
-                        merge_user,
-                        resp));
+                    case "reopened":
+                        var type = "Reopened";
+                        break;
                 }
 
-            });
+                var action = req.body["object_attributes"]["action"];
+                var merge_url = req.body["object_attributes"]["url"];
+                var merge_id = req.body["object_attributes"]["iid"];
+                var merge_title = req.body["object_attributes"]["title"];
+                var merge_user = req.body["user"]["name"];
 
+            } else if (req.headers["x-github-event"]) {
+
+                switch (req.body["action"].toLowerCase()) {
+                    case "opened":
+                        var type = "Opened";
+                        break;
+
+                    case "closed":
+                        var type = "Closed";
+                        break;
+
+                    case "reopened":
+                        var type = "Reopened";
+                        break;
+
+                    // ignore undefined things
+                    default:
+                        return;
+                }
+
+                if (req.body["pull_request"]["merged"] == true)
+                    type = "Merged";
+
+                var action = req.body["action"];
+                var merge_url = req.body["pull_request"]["html_url"];
+                var merge_id = req.body["pull_request"]["number"];
+                var merge_title = req.body["pull_request"]["title"];
+                var merge_user = req.body["pull_request"]["user"]["login"];
+
+            }
+
+            if (action == "open" || action == "close" || action == "reopen" || action == "opened" || action == "closed" || action == "reopened" || type == "Merged") {
+                var repository_name = req.body["repository"]["full_name"];
+                //logger.info(req.body);
+
+                var head = req.body["pull_request"]["head"]["label"];
+                var base = req.body["pull_request"]["base"]["label"];
+
+
+                isgd.shorten(merge_url, function (resp) {
+
+                    for (var channel of channels) {
+
+                        bot.say(channel, util.format("\x02\x0306Pull Request\x03\x02: %s \x02#%d\x02 \x02\x0303%s\x03\x02 (%s -> %s) - %s by %s - %s",
+                            repository_name,
+                            merge_id,
+                            merge_title,
+                            head,
+                            base,
+                            type,
+                            merge_user,
+                            resp));
+                    }
+
+                });
+
+            }
+
+            logger.info("Merge Request");
         }
-
-        logger.info("Merge Request");
-    }
 };
 
 // GitHub related hooks
@@ -567,19 +520,53 @@ function handleGitHub(req, res) {
     // sender
     var sender_login = req.body["sender"]["login"];
 
+    // comments
+    var comment_html_url = req.body["comment"]["html_url"];
+
     // parse possible event types
+    // for now do NO url shortening
     switch (req.headers["x-github-event"]) {
 
         // https://developer.github.com/v3/activity/events/types/#commitcommentevent
         case "commit_comment":
+
+            for (var channel of channels) {
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on a commit - %s",
+                    repo_full_name,
+                    req.body["comment"]["user"]["login"],
+                    comment_html_url));
+            }
+            logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
+
             break;
 
         // https://developer.github.com/v3/activity/events/types/#issuecommentevent
         case "issue_comment":
+
+            for (var channel of channels) {
+
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on issue \"%s\" - %s",
+                    repo_full_name,
+                    req.body["comment"]["user"]["login"],
+                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                    comment_html_url));
+            }
+            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+
             break;
 
         // https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
         case "pull_request_review_comment":
+
+            for (var channel of channels) {
+                bot.say(channel, util.format("\x02\x0306Comment\x03\x02: %s %s commented on pull request \"%s\" - %s",
+                    repo_full_name,
+                    req.body["issue"]["user"]["login"],
+                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                    comment_html_url));
+            }
+            logger.info("Github: pull request comment by " + req.body["issue"]["user"]["login"]);
+
             break;
 
         // https://developer.github.com/v3/activity/events/types/#createevent
