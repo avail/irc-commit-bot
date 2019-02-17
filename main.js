@@ -533,95 +533,108 @@ function handleGitHub(req, res) {
         comment_type = "deleted a comment on"
     }
 
+    var event = req.headers["x-github-event"];
+
+    // https://developer.github.com/v3/activity/events/types/#commitcommentevent
+    if (event == "commit_comment") {
+        for (var channel of channels) {
+            bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02commit\x02 - %s",
+                repo_full_name,
+                req.body["comment"]["user"]["login"],
+                comment_type,
+                comment_html_url));
+        }
+        logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
+    }
+
+    //https://developer.github.com/v3/activity/events/types/#issuecommentevent
+    if (event == "issue_comment") {
+        var split_url = req.body["issue"]["html_url"].split('/');
+        if (split_url[split_url.length - 2] == "issues") {
+            for (var channel of channels) {
+
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02issue\x02 \"%s\" - %s",
+                    repo_full_name,
+                    req.body["comment"]["user"]["login"],
+                    comment_type,
+                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                    comment_html_url));
+            }
+            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+        }
+        else {
+            for (var channel of channels) {
+
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02PR\x02 \"%s\" - %s",
+                    repo_full_name,
+                    req.body["comment"]["user"]["login"],
+                    comment_type,
+                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                    comment_html_url));
+            }
+            logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
+        }
+    }
+
+    // https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
+    if (event == "pull_request_review_comment") {
+        for (var channel of channels) {
+            bot.say(channel, "meh");
+            bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s pull request \"%s\" - %s",
+                repo_full_name,
+                req.body["sender"]["login"],
+                comment_type,
+                "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
+                comment_html_url));
+        }
+        logger.info("Github: pull request comment by " + req.body["sender"]["login"]);
+    }
+
+    https://developer.github.com/v3/activity/events/types/#createevent
+    if (event == "create") {
+        for (var channel of channels) {
+            bot.say(channel, "meh");
+        }
+        var create_type = req.body["ref_type"];
+        var ref = req.body["ref"];
+
+        if (create_type == "branch") {
+            for (var channel of channels) {
+                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new \x02branch\x02 %s - %s",
+                    repo_full_name,
+                    req.body["sender"]["login"],
+                    ref,
+                    repo_html_url + "/tree/" + ref));
+            }
+            logger.info("Github: create branch by " + req.body["sender"]["login"]);
+        }
+        else if (create_type == "tag") {
+
+        }
+    }
+
     // parse possible event types
     // for now do NO url shortening
     switch (req.headers["x-github-event"]) {
 
         // https://developer.github.com/v3/activity/events/types/#commitcommentevent
         case "commit_comment":
-
-            for (var channel of channels) {
-                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02commit\x02 - %s",
-                    repo_full_name,
-                    req.body["comment"]["user"]["login"],
-                    comment_type,
-                    comment_html_url));
-            }
-            logger.info("Github: commit comment by " + req.body["comment"]["user"]["login"]);
-
             break;
 
         // https://developer.github.com/v3/activity/events/types/#issuecommentevent
         case "issue_comment":
-
-            var split_url = req.body["issue"]["html_url"].split('/');
-            if (split_url[split_url.length - 2] == "issues") {
-                for (var channel of channels) {
-
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02issue\x02 \"%s\" - %s",
-                        repo_full_name,
-                        req.body["comment"]["user"]["login"],
-                        comment_type,
-                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                        comment_html_url));
-                }
-                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
-            }
-            else {
-                for (var channel of channels) {
-
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s \x02PR\x02 \"%s\" - %s",
-                        repo_full_name,
-                        req.body["comment"]["user"]["login"],
-                        comment_type,
-                        "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                        comment_html_url));
-                }
-                logger.info("Github: issue comment by " + req.body["issue"]["user"]["login"]);
-            }
-
             break;
 
         // https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
         case "pull_request_review_comment":
 
-            for (var channel of channels) {
-                bot.say(channel, "meh");
-                bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s pull request \"%s\" - %s",
-                    repo_full_name,
-                    req.body["sender"]["login"],
-                    comment_type,
-                    "\x02\x0303" + req.body["issue"]["title"] + "\x03\x02".replace(/[\r\n]/g, " - ").replace(/[\n]/g, " - "),
-                    comment_html_url));
-            }
-            logger.info("Github: pull request comment by " + req.body["sender"]["login"]);
+
 
             break;
 
         // https://developer.github.com/v3/activity/events/types/#createevent
         case "create":
-            for (var channel of channels) {
-                bot.say(channel, "meh");
-            }
-            var create_type = req.body["ref_type"];
-            var ref = req.body["ref"];
 
-            if (create_type == "branch") {
-                for (var channel of channels) {
-                    bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s created new \x02branch\x02 %s - %s",
-                        repo_full_name,
-                        req.body["sender"]["login"],
-                        ref,
-                        repo_html_url + "/tree/" + ref));
-                }
-                logger.info("Github: create branch by " + req.body["sender"]["login"]);
-            }
-            else if (create_type == "tag") {
-
-            }
-            else {
-                return;
-            }
 
             break;
 
