@@ -586,7 +586,7 @@ function handleGitHub(req, res) {
         case "pull_request_review_comment":
 
             for (var channel of channels) {
-                //bot.say("meh");
+                bot.say(channel, "meh");
                 bot.say(channel, util.format("\x02\x0306%s\x03\x02: %s %s pull request \"%s\" - %s",
                     repo_full_name,
                     req.body["issue"]["user"]["login"],
