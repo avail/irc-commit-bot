@@ -590,7 +590,7 @@ function handleGitHub(req, res) {
         //logger.info("Github: pull request comment by " + req.body["sender"]["login"]);
     }
 
-    //https://developer.github.com/v3/activity/events/types/#createevent
+    // https://developer.github.com/v3/activity/events/types/#createevent
     if (req.headers["x-github-event"] == "create") {
         for (var channel of channels) {
             bot.say(channel, "meh");
