@@ -1,24 +1,11 @@
-# Modifed version of irc-commit-bot
+# IRC-COMMIT-BOT (FORKED)
 
-#### All PRs should be aimed at branch: dev
+This project is forked from https://github.com/avail/irc-commit-bot
 
+There have been/will be *many* changes to the codebase, primarily with a GitHub-leaning bent (Gitlab? whats gitlab?).
 
-now, the original readme.....
+I may submit a PR back upstream at some point, but we'll have to see.
 
-# IRC COMMIT BOT
+#### Contributing
 
-I literally couldn't find anything like this, it's probably just me being bad though.
-
-Made something better? Fork the repository and submit a pull request!
-
-# USAGE
-
-```npm install```
-
-`nano main.js` and modify stuff from the config var to your likings, everything else can stay default.
-
-`nodejs main.js` to run the bot.
-
-Add a new Web Hook to whatever repository you want to track, with the bot's URL, e.g http://getrektby.us:4021/git.json
-
-Enjoy an influx of spam as people commit to the repository!
+This code is currently live in production in a couple of places, with auto-deplpy webhooks set up. Because of this, please direct any Pull Requests at the 'dev' branch. Once merged into 'master' auto-updates happen.
